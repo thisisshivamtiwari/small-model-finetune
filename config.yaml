@@ -1,0 +1,27 @@
+# Every arm scored on the full official test split (3,080 messages, 40 per intent).
+seed: 0
+train_sizes: [8, 32, null]          # examples per intent; null = the full training split (~130 per intent)
+bootstrap: 2000
+max_tokens: 24                      # longest label is 13 tokens
+
+models:                             # MLX 4-bit weights; MODEL_DIR (default ~/.cache/smft) holds the folders
+  qwen0.5b: Qwen2.5-0.5B-Instruct-4bit
+  qwen1.5b: Qwen2.5-1.5B-Instruct-4bit
+  qwen3b: Qwen2.5-3B-Instruct-4bit
+
+lora:                               # QLoRA on the 4-bit base, loss on the label tokens only (--mask-prompt)
+  base: qwen0.5b
+  num_layers: 16
+  batch_size: 16
+  learning_rate: 2.0e-4
+  epochs: {8: 6, 32: 3, null: 2}   # passes over the sample; iters = ceil(epochs * n / batch_size)
+  max_seq_length: 160
+
+arms:                               # name: how predictions/<name>.jsonl is made
+  zeroshot-qwen0.5b: {kind: zero_shot, model: qwen0.5b}
+  zeroshot-qwen1.5b: {kind: zero_shot, model: qwen1.5b}
+  zeroshot-qwen3b: {kind: zero_shot, model: qwen3b}
+  fewshot77-qwen3b: {kind: few_shot, model: qwen3b}
+  lora-qwen0.5b-k8: {kind: finetuned, model: qwen0.5b, k: 8}
+  lora-qwen0.5b-k32: {kind: finetuned, model: qwen0.5b, k: 32}
+  lora-qwen0.5b-all: {kind: finetuned, model: qwen0.5b, k: null}

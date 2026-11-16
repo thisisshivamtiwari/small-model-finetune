@@ -1,0 +1,45 @@
+[project]
+name = "small-model-finetune"
+version = "0.1.0"
+description = "When does LoRA fine-tuning a small model beat prompting a bigger one? Banking77 intent routing, measured on a laptop"
+readme = "README.md"
+authors = [
+    { name = "Shivam Tiwari" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2",
+    "pandas>=2.2,<3",
+    "pyarrow>=20",
+    "scikit-learn>=1.6",
+    "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+# Training and inference run on Apple silicon only; CI re-scores the committed predictions without them.
+mlx = [
+    "mlx-lm",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.0,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.12",
+]
+
+[tool.ruff]
+line-length = 130
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.uv.build-backend]
+module-name = "smft"

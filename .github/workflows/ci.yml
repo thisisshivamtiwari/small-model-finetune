@@ -1,0 +1,28 @@
+# Lint, tests and the eval gate. The gate reruns the TF-IDF baseline from the committed BANKING77 files, re-scores
+# every committed predictions file and fails if any number in results/ or the README tables no longer reproduces.
+# The LLM arms need Apple silicon (MLX), so CI checks their committed predictions rather than rerunning the models.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Install
+        run: uv sync --locked
+      - name: Lint
+        run: uv run ruff check . && uv run ruff format --check .
+      - name: Tests
+        run: uv run pytest -q
+      - name: Eval gate (baseline rerun + re-score)
+        run: uv run python -m smft ci
