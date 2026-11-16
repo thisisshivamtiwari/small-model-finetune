@@ -1,0 +1,16 @@
+{
+ "k": "k8",
+ "base": "Qwen2.5-0.5B-Instruct-4bit",
+ "train_examples": 616,
+ "valid_examples": 154,
+ "epochs": 4,
+ "iters": 308,
+ "batch_size": 8,
+ "grad_accumulation": 2,
+ "learning_rate": 0.0002,
+ "num_layers": 16,
+ "train_seconds": 340.9,
+ "train_loss_last": null,
+ "val_loss": [],
+ "peak_mem_gb": null
+}

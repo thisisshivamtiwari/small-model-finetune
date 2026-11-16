@@ -33,6 +33,8 @@ def main(argv: list[str] | None = None) -> int:
     infer.add_argument("--arm", required=True)
     infer.add_argument("--limit", type=int, help="first N test messages only (smoke test)")
     sub.add_parser("score", help="score every predictions/*.jsonl into results/ and refresh the README tables")
+    demo = sub.add_parser("demo", help="short terminal walkthrough of the committed results (for the demo video)")
+    demo.add_argument("--pause", type=float, default=1.0)
     sub.add_parser("ci", help="rerun the baseline and re-score; fail if any committed number changed")
     args = parser.parse_args(argv)
     cfg = load_config()
@@ -69,6 +71,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.cmd == "score":
         report.write_all(cfg, test)
+        return 0
+    if args.cmd == "demo":
+        from smft import demo as walkthrough
+
+        walkthrough.run(args.pause)
         return 0
     if args.cmd == "ci":
         return report.ci(cfg, pool, test)

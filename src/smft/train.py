@@ -12,6 +12,19 @@ from smft.config import k_name, model_path
 from smft.data import sample_per_class
 from smft.prompts import training_record
 
+ANSI = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def parse_log(log: str) -> dict:
+    """Loss curve from mlx_lm's progress table: rows "<iter> <train_loss> ..." and "<iter> val <loss> ..."."""
+    text = ANSI.sub("", log)
+    train = [(int(i), float(x)) for i, x in re.findall(r"^\s*(\d+)\s+([0-9.]+)\s+[▼▲=]", text, re.M)]
+    val = [(int(i), float(x)) for i, x in re.findall(r"^\s*(\d+)\s+val\s+([0-9.]+)", text, re.M)]
+    return {
+        "train_loss_last": train[-1][1] if train else None,
+        "val_loss": [{"iter": i, "loss": x} for i, x in val],
+    }
+
 
 def _write_jsonl(path: Path, df) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -27,6 +40,7 @@ def run(cfg: dict, pool, valid, k: int | None, adapters: Path = Path("adapters")
     _write_jsonl(out / "data" / "train.jsonl", sample)
     _write_jsonl(out / "data" / "valid.jsonl", valid)
     epochs = lora["epochs"][k]
+    # mlx_lm counts --iters in micro-batches; one optimiser step is grad_accumulation of them.
     iters = math.ceil(epochs * len(sample) / lora["batch_size"])
     cmd = [
         sys.executable, "-m", "mlx_lm", "lora",
@@ -35,6 +49,7 @@ def run(cfg: dict, pool, valid, k: int | None, adapters: Path = Path("adapters")
         "--fine-tune-type", "lora", "--mask-prompt",
         "--num-layers", str(lora["num_layers"]), "--batch-size", str(lora["batch_size"]),
         "--learning-rate", str(lora["learning_rate"]), "--iters", str(iters),
+        "--grad-accumulation-steps", str(lora["grad_accumulation"]), "--grad-checkpoint",
         "--max-seq-length", str(lora["max_seq_length"]), "--seed", str(cfg["seed"]),
         "--steps-per-report", "25", "--steps-per-eval", str(max(iters // 4, 25)), "--val-batches", "-1",
     ]  # fmt: skip
@@ -45,9 +60,7 @@ def run(cfg: dict, pool, valid, k: int | None, adapters: Path = Path("adapters")
     (out / "train.log").write_text(log)
     if proc.returncode != 0:
         raise RuntimeError(f"mlx_lm lora failed:\n{log[-3000:]}")
-    train_loss = [float(x) for x in re.findall(r"Train loss ([0-9.]+)", log)]
-    val_loss = [float(x) for x in re.findall(r"Val loss ([0-9.]+)", log)]
-    peak = [float(x) for x in re.findall(r"Peak mem ([0-9.]+) GB", log)]
+    losses = parse_log(log)
     info = {
         "k": k_name(k),
         "base": cfg["models"][lora["base"]],
@@ -56,12 +69,11 @@ def run(cfg: dict, pool, valid, k: int | None, adapters: Path = Path("adapters")
         "epochs": epochs,
         "iters": iters,
         "batch_size": lora["batch_size"],
+        "grad_accumulation": lora["grad_accumulation"],
         "learning_rate": lora["learning_rate"],
         "num_layers": lora["num_layers"],
         "train_seconds": round(seconds, 1),
-        "train_loss_last": train_loss[-1] if train_loss else None,
-        "val_loss": val_loss,
-        "peak_mem_gb": max(peak) if peak else None,
+        **losses,
     }
     results.mkdir(exist_ok=True)
     (results / f"train_{k_name(k)}.json").write_text(json.dumps(info, indent=1) + "\n")

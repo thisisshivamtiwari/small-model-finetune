@@ -12,9 +12,10 @@ models:                             # MLX 4-bit weights; MODEL_DIR (default ~/.c
 lora:                               # QLoRA on the 4-bit base, loss on the label tokens only (--mask-prompt)
   base: qwen0.5b
   num_layers: 16
-  batch_size: 16
+  batch_size: 8                     # x2 gradient accumulation = 16 per step; 16 at once ran out of GPU memory on 8 GB
+  grad_accumulation: 2
   learning_rate: 2.0e-4
-  epochs: {8: 6, 32: 3, null: 2}   # passes over the sample; iters = ceil(epochs * n / batch_size)
+  epochs: {8: 4, 32: 2, null: 1}   # passes over the sample; steps = ceil(epochs * n / 16)
   max_seq_length: 160
 
 arms:                               # name: how predictions/<name>.jsonl is made

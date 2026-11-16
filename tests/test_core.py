@@ -96,3 +96,13 @@ def test_paired_diff_sign():
     worse = ["age_limit"] * 5 + ["card_linking"] * 5
     d = paired_accuracy_diff(gold, better, worse, n_boot=200)
     assert d["diff"] == 0.5 and d["ci95"][0] > 0 and d["p_a_better"] >= 0.99
+
+
+def test_parse_training_log():
+    from smft.train import parse_log
+
+    log = (
+        "  iter   train_loss\n     1    \x1b[1mval\x1b[0m 7.468    7.03s\n"
+        "    25    4.135 ▼       59\n    50    3.9 ▼  58\n    50    val 2.2    6s\n"
+    )
+    assert parse_log(log) == {"train_loss_last": 3.9, "val_loss": [{"iter": 1, "loss": 7.468}, {"iter": 50, "loss": 2.2}]}
