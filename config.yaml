@@ -15,7 +15,7 @@ lora:                               # QLoRA on the 4-bit base, loss on the label
   batch_size: 8                     # x2 gradient accumulation = 16 per step; 16 at once ran out of GPU memory on 8 GB
   grad_accumulation: 2
   learning_rate: 2.0e-4
-  epochs: {8: 4, 32: 2, null: 1}   # passes over the sample; steps = ceil(epochs * n / 16)
+  epochs: {8: 8, 32: 2, null: 1}   # passes over the sample, set by validation loss (k8 at 4 epochs was still falling)
   max_seq_length: 160
 
 arms:                               # name: how predictions/<name>.jsonl is made

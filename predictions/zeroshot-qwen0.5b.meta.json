@@ -1,0 +1,7 @@
+{
+ "arm": "zeroshot-qwen0.5b",
+ "kind": "zero_shot",
+ "model": "qwen0.5b",
+ "prefix_tokens": 415,
+ "prefix_prefill_seconds": 0.246
+}

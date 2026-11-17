@@ -1,0 +1,38 @@
+{
+ "k": "k8",
+ "base": "Qwen2.5-0.5B-Instruct-4bit",
+ "train_examples": 616,
+ "valid_examples": 154,
+ "epochs": 4,
+ "iters": 308,
+ "batch_size": 8,
+ "grad_accumulation": 2,
+ "learning_rate": 0.0002,
+ "num_layers": 16,
+ "train_seconds": 340.9,
+ "train_loss_last": 0.575,
+ "val_loss": [
+  {
+   "iter": 1,
+   "loss": 7.468
+  },
+  {
+   "iter": 77,
+   "loss": 4.113
+  },
+  {
+   "iter": 154,
+   "loss": 2.208
+  },
+  {
+   "iter": 231,
+   "loss": 0.95
+  },
+  {
+   "iter": 308,
+   "loss": 0.545
+  }
+ ],
+ "peak_mem_gb": null,
+ "note": "superseded: val loss still falling at the end, so k8 was retrained for 8 epochs (train_k8.json)"
+}

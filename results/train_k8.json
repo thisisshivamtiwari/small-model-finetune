@@ -3,14 +3,34 @@
  "base": "Qwen2.5-0.5B-Instruct-4bit",
  "train_examples": 616,
  "valid_examples": 154,
- "epochs": 4,
- "iters": 308,
+ "epochs": 8,
+ "iters": 616,
  "batch_size": 8,
  "grad_accumulation": 2,
  "learning_rate": 0.0002,
  "num_layers": 16,
- "train_seconds": 340.9,
- "train_loss_last": null,
- "val_loss": [],
- "peak_mem_gb": null
+ "train_seconds": 830.2,
+ "train_loss_last": 0.076,
+ "val_loss": [
+  {
+   "iter": 1,
+   "loss": 7.468
+  },
+  {
+   "iter": 154,
+   "loss": 2.502
+  },
+  {
+   "iter": 308,
+   "loss": 0.568
+  },
+  {
+   "iter": 462,
+   "loss": 0.301
+  },
+  {
+   "iter": 616,
+   "loss": 0.222
+  }
+ ]
 }

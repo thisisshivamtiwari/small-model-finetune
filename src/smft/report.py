@@ -140,7 +140,7 @@ def write_all(cfg: dict, test) -> tuple[dict, dict]:
 
 def ci(cfg: dict, pool, test) -> int:
     """The eval gate: the baseline reproduces, the committed predictions re-score to the committed results, the README
-    tables match, and the headline claim (the full LoRA beats the best prompted arm) still holds."""
+    tables match, and the headline claims still hold."""
     failures = []
     for k in cfg["train_sizes"]:
         name = f"tfidf-lr-{k_name(k)}"
@@ -157,9 +157,13 @@ def ci(cfg: dict, pool, test) -> int:
         failures.append("results/headline.json does not match a re-score of predictions/")
     if f"{START}\n{tables(scores, head)}\n{END}" not in README.read_text():
         failures.append("README results tables are stale: run `python -m smft score`")
+    # The README's two conclusions; if a rerun flips either, the write-up is wrong and CI must say so.
     pair = head["paired"].get("lora-qwen0.5b-all vs fewshot77-qwen3b")
     if pair is None or pair["ci95"][0] <= 0:
         failures.append("headline no longer holds: full LoRA is not clearly better than 77-shot 3B")
+    pair = head["paired"].get("lora-qwen0.5b-all vs tfidf-lr-all")
+    if pair is None or pair["ci95"][1] >= 0:
+        failures.append("headline no longer holds: TF-IDF is not clearly better than the full LoRA")
     for f in failures:
         print("FAIL", f)
     print("ci: ok" if not failures else f"ci: {len(failures)} failure(s)")

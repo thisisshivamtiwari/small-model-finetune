@@ -1,0 +1,8 @@
+{
+ "arm": "lora-qwen0.5b-k8",
+ "kind": "finetuned",
+ "model": "qwen0.5b",
+ "k": 8,
+ "prefix_tokens": 27,
+ "prefix_prefill_seconds": 0.412
+}

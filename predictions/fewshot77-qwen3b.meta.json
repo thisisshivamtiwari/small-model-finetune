@@ -1,0 +1,7 @@
+{
+ "arm": "fewshot77-qwen3b",
+ "kind": "few_shot",
+ "model": "qwen3b",
+ "prefix_tokens": 2426,
+ "prefix_prefill_seconds": 10.947
+}
