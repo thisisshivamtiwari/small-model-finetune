@@ -32,6 +32,7 @@ def main(argv: list[str] | None = None) -> int:
     infer = sub.add_parser("infer", help="run one LLM arm over the test set (Apple silicon)")
     infer.add_argument("--arm", required=True)
     infer.add_argument("--limit", type=int, help="first N test messages only (smoke test)")
+    infer.add_argument("--out", type=Path, help="write predictions here instead of predictions/<arm>.jsonl")
     sub.add_parser("score", help="score every predictions/*.jsonl into results/ and refresh the README tables")
     demo = sub.add_parser("demo", help="short terminal walkthrough of the committed results (for the demo video)")
     demo.add_argument("--pause", type=float, default=1.0)
@@ -61,10 +62,15 @@ def main(argv: list[str] | None = None) -> int:
         from smft import infer
 
         arm = cfg["arms"][args.arm]
-        adapter = Path("adapters") / k_name(arm["k"]) if arm["kind"] == "finetuned" else None
+        adapter = None
+        if arm["kind"] == "finetuned":
+            # A fresh training run lands in adapters/; the committed full-data adapter lets a clone skip training.
+            adapter = Path("adapters") / k_name(arm["k"])
+            if not (adapter / "adapters.safetensors").exists():
+                adapter = Path("models") / args.arm
         rows = test.head(args.limit) if args.limit else test
-        out = PRED / f"{args.arm}.jsonl" if not args.limit else Path("/tmp") / f"smft-smoke-{args.arm}.jsonl"
-        if args.limit:
+        out = args.out or (PRED / f"{args.arm}.jsonl" if not args.limit else Path("/tmp") / f"smft-smoke-{args.arm}.jsonl")
+        if args.limit or args.out:
             out.unlink(missing_ok=True)
         infer.run(args.arm, arm, cfg, rows, pool, out, adapter)
         print(out)

@@ -139,6 +139,8 @@ python -m smft download             # BANKING77 parquet files (already committed
 # MLX 4-bit weights from huggingface.co/mlx-community into ~/.cache/smft (or set MODEL_DIR):
 #   Qwen2.5-0.5B-Instruct-4bit, Qwen2.5-1.5B-Instruct-4bit, Qwen2.5-3B-Instruct-4bit
 ./run_all.sh                        # baseline, 3 LoRA runs, 7 LLM arms, score (about 2 hours on an M2)
+# or just the headline arm with the committed adapter (models/lora-qwen0.5b-all, 11.7 MB), about 5 minutes:
+uv run python -m smft infer --arm lora-qwen0.5b-all --out /tmp/lora-all.jsonl
 uv run python -m smft ci            # the CI gate
 uv run python -m smft demo          # terminal walkthrough of the results
 ```
